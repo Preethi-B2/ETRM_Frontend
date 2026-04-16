@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { COLORS, FONTS } from "../styles/theme";
 import {
   Home,
@@ -7,6 +8,8 @@ import {
   HelpCircle,
   Zap,
   Bot,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 
 const MENU_ITEMS = [
@@ -24,136 +27,140 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onMenuClick }: SidebarProps) {
+  const [expanded, setExpanded] = useState(false);
+
   return (
-    <div
+    <aside
       style={{
-        width: "80px",
+        width: expanded ? "240px" : "72px",
         minHeight: "100vh",
-        background: "#ffffff",
+        background: "#fff",
         borderRight: `1.5px solid ${COLORS.borderLight}`,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "24px 0",
         position: "fixed",
         top: 0,
         left: 0,
-        zIndex: 10,
-        boxShadow: "2px 0 12px rgba(0,0,0,0.04)",
+        zIndex: 100,
+        display: "flex",
+        flexDirection: "column",
+        padding: "16px 8px",
+        transition: "width 0.25s ease",
+        overflowX: "hidden",
       }}
     >
+      {/* ---------- Logo ---------- */}
       <div
         style={{
-          width: "48px",
-          height: "48px",
-          background: COLORS.primary,
-          color: COLORS.accent,
-          fontWeight: 800,
-          fontSize: "16px",
-          borderRadius: "7px",
-          letterSpacing: "0.05em",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          marginBottom: "32px",
+          justifyContent: expanded ? "space-between" : "center",
+          padding: "8px",
+          marginBottom: "24px",
         }}
       >
-        EY
+        <div
+          style={{
+            width: "40px",
+            height: "40px",
+            background: COLORS.primary,
+            color: COLORS.accent,
+            fontWeight: 800,
+            fontSize: "14px",
+            borderRadius: "6px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            letterSpacing: "0.05em",
+            flexShrink: 0,
+          }}
+        >
+          EY
+        </div>
+
+        {expanded && (
+          <span
+            style={{
+              marginLeft: "12px",
+              fontWeight: 700,
+              fontFamily: FONTS.primary,
+              fontSize: "14px",
+            }}
+          >
+            
+          </span>
+        )}
       </div>
 
-      <div
+      {/* ---------- Menu ---------- */}
+      <nav
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "16px",
+          gap: "6px",
           flex: 1,
         }}
       >
-        {MENU_ITEMS.map((item) => {
-          const Icon = item.icon;
-          return (
-            <div
-              key={item.label}
-              style={{
-                position: "relative",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              className="sidebar-item-group"
-            >
-              <button
+        {MENU_ITEMS.map(({ label, icon: Icon }) => (
+          <button
+            key={label}
+            onClick={() => onMenuClick?.(label)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              padding: "10px 12px",
+              borderRadius: "8px",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              width: "100%",
+              textAlign: "left",
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = COLORS.accent)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "transparent")
+            }
+          >
+            <Icon size={20} color="#000" />
+
+            {expanded && (
+              <span
                 style={{
-                  width: "48px",
-                  height: "48px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: "50%",
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease-in-out",
-                  padding: 0,
-                }}
-                className="sidebar-icon-button"
-                onClick={() => onMenuClick?.(item.label)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = COLORS.accent;
-                  const icon = e.currentTarget.querySelector("svg");
-                  if (icon) {
-                    icon.style.color = "#000";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                  const icon = e.currentTarget.querySelector("svg");
-                  if (icon) {
-                    icon.style.color = "#000";
-                  }
-                }}
-              >
-                <Icon size={20} strokeWidth={2} color="#000" />
-              </button>
-              <div
-                style={{
-                  position: "absolute",
-                  left: "64px",
-                  background: COLORS.primary,
-                  color: "#fff",
-                  padding: "8px 12px",
-                  borderRadius: "6px",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  whiteSpace: "nowrap",
                   fontFamily: FONTS.primary,
-                  opacity: 0,
-                  pointerEvents: "none",
-                  transition: "opacity 0.2s ease-in-out",
-                  zIndex: 20,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  fontSize: "14px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
                 }}
-                className="sidebar-label"
               >
-                {item.label}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                {label}
+              </span>
+            )}
+          </button>
+        ))}
+      </nav>
 
-      <div
+      {/* ---------- Expand / Collapse ---------- */}
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        aria-label="Toggle sidebar"
         style={{
-          marginTop: "auto",
-          height: "40px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: expanded ? "flex-end" : "center",
+          padding: "8px",
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
         }}
-      />
-
-      <style>{`
-        .sidebar-item-group:hover .sidebar-label {
-          opacity: 1;
-        }
-      `}</style>
-    </div>
+      >
+        {expanded ? (
+          <ChevronLeft size={18} />
+        ) : (
+          <ChevronRight size={18} />
+        )}
+      </button>
+    </aside>
   );
 }
