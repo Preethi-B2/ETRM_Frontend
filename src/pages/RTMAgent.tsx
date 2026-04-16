@@ -1,7 +1,22 @@
+import { useMemo, useState } from "react";
 import { COLORS, FONTS, CARD_STYLES } from "../styles/theme";
+import { Dashboard } from "./Dashboard";
+import { generateCsvFile } from "../utils/documentGenerator";
+
+type TraceabilityRow = {
+  source: string;
+  date: string;
+  fileName: string;
+  dealCapture: boolean;
+  pricing: boolean;
+  credit: boolean;
+  risk: boolean;
+  scheduling: boolean;
+  inventory: boolean;
+};
 
 export function RTMAgent() {
-  const traceabilityData = [
+  const traceabilityData: TraceabilityRow[] = [
     {
       source: "Meeting Notes",
       date: "2026-01-10",
@@ -74,10 +89,49 @@ export function RTMAgent() {
     { feature: "Deployment & Scalability", count: 1 },
   ];
 
+  const handleDownloadRTM = () => {
+    const traceRows = [
+      ["Source", "Date", "File Name", "Deal", "Price", "Credit", "Risk", "Scheduling", "Inventory"],
+      ...traceabilityData.map((row) => [
+        row.source,
+        row.date,
+        row.fileName,
+        row.dealCapture ? "Yes" : "No",
+        row.pricing ? "Yes" : "No",
+        row.credit ? "Yes" : "No",
+        row.risk ? "Yes" : "No",
+        row.scheduling ? "Yes" : "No",
+        row.inventory ? "Yes" : "No",
+      ]),
+      [],
+      ["Coverage Summary"],
+      ["Feature", "Count"],
+      ...coverageData.map((item) => [item.feature, String(item.count)]),
+    ];
+
+    generateCsvFile("ETRM_RTM_Report.csv", traceRows);
+  };
+
   const maxCount = Math.max(...coverageData.map((item) => item.count));
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const rowsPerPage = 3;
+  const pageCount = Math.max(1, Math.ceil(traceabilityData.length / rowsPerPage));
+  const visibleRows = useMemo<TraceabilityRow[]>(
+    () =>
+      traceabilityData.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage,
+      ),
+    [currentPage, traceabilityData],
+  );
+
+  const startItem = (currentPage - 1) * rowsPerPage + 1;
+  const endItem = startItem + visibleRows.length - 1;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      <Dashboard />
+
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <h1
@@ -106,6 +160,7 @@ export function RTMAgent() {
           </div>
         </div>
         <button
+          onClick={handleDownloadRTM}
           style={{
             background: COLORS.accent,
             color: COLORS.primary,
@@ -224,7 +279,7 @@ export function RTMAgent() {
                 </tr>
               </thead>
               <tbody>
-                {traceabilityData.map((row, idx) => (
+                {visibleRows.map((row: TraceabilityRow, idx: number) => (
                   <tr
                     key={idx}
                     style={{
@@ -330,44 +385,69 @@ export function RTMAgent() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "12px",
+              justifyContent: "space-between",
+              gap: "16px",
               marginTop: "16px",
+              flexWrap: "wrap",
             }}
           >
-            <button
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+              <button
+                onClick={() => setCurrentPage((page: number) => Math.max(1, page - 1))}
+                disabled={currentPage === 1}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  border: `1px solid ${COLORS.borderLight}`,
+                  background: currentPage === 1 ? COLORS.backgroundLighter : COLORS.accent,
+                  color: currentPage === 1 ? COLORS.textMuted : COLORS.primary,
+                  cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                }}
+              >
+                Previous
+              </button>
+              {Array.from({ length: pageCount }, (_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(index + 1)}
+                  style={{
+                    padding: "8px 10px",
+                    minWidth: "38px",
+                    borderRadius: "8px",
+                    border: `1px solid ${COLORS.borderLight}`,
+                    background: currentPage === index + 1 ? COLORS.primary : "#fff",
+                    color: currentPage === index + 1 ? "#fff" : COLORS.text,
+                    cursor: "pointer",
+                  }}
+                >
+                  {index + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage((page: number) => Math.min(pageCount, page + 1))}
+                disabled={currentPage === pageCount}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  border: `1px solid ${COLORS.borderLight}`,
+                  background: currentPage === pageCount ? COLORS.backgroundLighter : COLORS.accent,
+                  color: currentPage === pageCount ? COLORS.textMuted : COLORS.primary,
+                  cursor: currentPage === pageCount ? "not-allowed" : "pointer",
+                }}
+              >
+                Next
+              </button>
+            </div>
+            <p
               style={{
-                width: "20px",
-                height: "20px",
-                padding: "0",
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                fontSize: "16px",
+                fontSize: "13px",
+                color: COLORS.textMuted,
+                margin: 0,
+                fontFamily: FONTS.primary,
               }}
             >
-              ◀
-            </button>
-            <div
-              style={{
-                flex: 1,
-                height: "6px",
-                background: COLORS.borderLight,
-                borderRadius: "3px",
-              }}
-            />
-            <button
-              style={{
-                width: "20px",
-                height: "20px",
-                padding: "0",
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                fontSize: "16px",
-              }}
-            >
-              ▶
-            </button>
+              Showing {startItem}–{endItem} of {traceabilityData.length}
+            </p>
           </div>
         </div>
 

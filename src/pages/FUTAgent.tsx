@@ -1,5 +1,6 @@
 import React from "react";
 import { COLORS, FONTS, CARD_STYLES } from "../styles/theme";
+import { generateCsvFile } from "../utils/documentGenerator";
 
 const BLUE_900 = "#1a2b4d";
 const YELLOW_400 = "#f5c842";
@@ -22,6 +23,28 @@ export function FUTAgent() {
     { title: "Scheduling: Supply and Demand Balance Report", color: TEAL_700, status: 1 },
     { title: "Accounting: Invoice Template", color: YELLOW_400, status: 1 },
   ];
+
+  const handleDownloadFUT = () => {
+    const header = ["Metric", "Value"];
+    const summaryRows = [
+      ["Front-Office", "85"],
+      ["Scheduling", "72"],
+      ["Risk", "68"],
+      ["Accounting", "91"],
+    ];
+    const testRows = tests.map((test) => [test.title, test.status === 1 ? "Ready" : "Pending"]);
+    const allRows = [
+      ["FUT Executive Summary"],
+      header,
+      ...summaryRows,
+      [],
+      ["Functional Unit Tests"],
+      ["Test", "Status"],
+      ...testRows,
+    ];
+
+    generateCsvFile("ETRM_FUT_Report.csv", allRows);
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -65,6 +88,7 @@ export function FUTAgent() {
           </p>
         </div>
         <button
+          onClick={handleDownloadFUT}
           style={{
             background: COLORS.accent,
             color: COLORS.primary,

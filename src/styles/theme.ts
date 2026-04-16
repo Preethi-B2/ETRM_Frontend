@@ -13,6 +13,8 @@ export const COLORS = {
   background: "#f4f4f8",
   backgroundLight: "#fafafa",
   backgroundLighter: "#f8f8fb",
+  surface: "#f7f7fb",
+  card: "#ffffff",
 } as const;
 
 export const FONTS = {

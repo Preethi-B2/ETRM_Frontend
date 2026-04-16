@@ -6,7 +6,7 @@ import { Step1 } from "./components/steps/Step1";
 import { Step2 } from "./components/steps/Step2";
 import { Step3 } from "./components/steps/Step3";
 import { Step4 } from "./components/steps/Step4";
-import { Dashboard } from "./pages/Dashboard";
+import { HomePage } from "./pages/Dashboard";
 import { RTMAgent } from "./pages/RTMAgent";
 import { BDDAgent } from "./pages/BDDAgent";
 import { FUTAgent } from "./pages/FUTAgent";
@@ -25,6 +25,7 @@ export default function App() {
   const [ut, setUt] = useState("");
   const [selections, setSelections] = useState<SelectionMap>({});
   const [others, setOthers] = useState<Record<string, string>>({});
+  const [themeMode, setThemeMode] = useState("Light Theme");
 
   const toggle = (field: string, val: string) =>
     setSelections((prev) => {
@@ -47,12 +48,22 @@ export default function App() {
     setOthers({});
   };
 
+  const prefersDark =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+
+  const theme =
+    themeMode === "Dark Theme" ||
+    (themeMode === "Auto" && prefersDark)
+      ? { background: "#0b1020", body: "#05070f", text: "#f4f4f8" }
+      : { background: COLORS.background, body: COLORS.background, text: COLORS.text };
+
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: ${COLORS.background}; }
+        body { background: ${theme.body}; color: ${theme.text}; }
         input:focus { outline: 2px solid ${COLORS.primary} !important; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #f0f0f4; }
@@ -64,7 +75,7 @@ export default function App() {
           display: "flex",
           minHeight: "100vh",
           fontFamily: FONTS.primary,
-          background: COLORS.background,
+          background: theme.background,
         }}
       >
         <Sidebar onMenuClick={setCurrentScreen} />
@@ -80,7 +91,7 @@ export default function App() {
             }} 
           />
 
-          {currentScreen === "Dashboard" && <Dashboard />}
+          {currentScreen === "Dashboard" && <HomePage onNavigate={setCurrentScreen} />}
           {currentScreen === "RTM Agent" && <RTMAgent />}
           {currentScreen === "BDD Agent" && <BDDAgent />}
           {currentScreen === "FUT Agent" && <FUTAgent />}
@@ -103,7 +114,9 @@ export default function App() {
             />
           )}
           {currentScreen === "Help & Support" && <HelpSupport />}
-          {currentScreen === "Settings" && <Settings />}
+          {currentScreen === "Settings" && (
+            <Settings themeMode={themeMode} onThemeChange={setThemeMode} />
+          )}
 
           {!currentScreen && step === 0 && (
             <Step1

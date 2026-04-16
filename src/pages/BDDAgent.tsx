@@ -1,5 +1,6 @@
 import React from "react";
 import { FONTS, CARD_STYLES } from "../styles/theme";
+import { generateWordFile } from "../utils/documentGenerator";
 
 const BLUE_900 = "#1a2b4d";
 const YELLOW_400 = "#f5c842";
@@ -29,6 +30,23 @@ export function BDDAgent() {
     { label: "Risk", value: "1" },
     { label: "Accounting", value: "1" },
   ];
+
+  const handleDownloadBDD = () => {
+    const sections = [
+      {
+        heading: "Executive Summary",
+        rows: executiveSummary.map((item) => `${item.label}: ${item.value}`),
+      },
+      {
+        heading: "Key Business Requirements",
+        rows: businessRequirements.map(
+          (req) => `${req.title} — ${req.covered}% covered`,
+        ),
+      },
+    ];
+
+    generateWordFile("ETRM_BDD_Report", sections);
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -65,6 +83,7 @@ export function BDDAgent() {
           </p>
         </div>
         <button
+          onClick={handleDownloadBDD}
           style={{
             background: YELLOW_400,
             color: "#000",

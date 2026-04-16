@@ -1,6 +1,11 @@
 import { COLORS, FONTS } from "../styles/theme";
 
-export function Settings() {
+type SettingsProps = {
+  themeMode: string;
+  onThemeChange: (theme: string) => void;
+};
+
+export function Settings({ themeMode, onThemeChange }: SettingsProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       <div
@@ -69,6 +74,8 @@ export function Settings() {
               Theme Preference
             </label>
             <select
+              value={themeMode}
+              onChange={(e) => onThemeChange(e.target.value)}
               style={{
                 width: "100%",
                 padding: "8px 12px",
